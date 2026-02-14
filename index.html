@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rompecabezas para mi cielo</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #9fec7b, #fad0c4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: white;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #puzzle {
+      width: 520px;
+      height: 520px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 20px;
+    }
+
+    .piece {
+      background-size: 520px 520px;
+      cursor: grab;
+      border-radius: 10px;
+    }
+
+    #controls { margin-top: 15px; }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 12px;
+      background: white;
+      color: #ff5e78;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    #winOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 10;
+      padding: 20px;
+    }
+
+    iframe { border-radius: 16px; max-width: 90vw; }
+
+    #finalLetter {
+      display: none;
+      margin-top: 20px;
+      font-size: 20px;
+      max-width: 700px;
+      background: rgba(255,255,255,0.15);
+      padding: 20px;
+      border-radius: 18px;
+      animation: fadeIn 2s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #bgMusic { display: none; }
+  </style>
+</head>
+
+<body>
+  <h1>Arma nuestras fotitos 💖</h1>
+
+  <div id="controls">
+    <button onclick="changeImage(0)">Foto 1</button>
+    <button onclick="changeImage(1)">Foto 2</button>
+    <button onclick="changeImage(2)">Foto 3</button>
+  </div>
+
+  <div id="puzzle"></div>
+
+  <div id="winOverlay">
+
+    <!-- VIDEO DE YOUTUBE -->
+    <iframe src="https://player.vimeo.com/video/1165012936?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" width="478" height="850" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" referrerpolicy="strict-origin-when-cross-origin" title="video1"></iframe>
+    <audio id="bgMusic" src="musica.mp3" loop></audio>
+
+    <!-- CARTA FINAL -->
+    <div id="finalLetter">
+      <b>Mi Naomi 💕</b><br><br>
+      HOLAAAAA jejeje, bueno como te dije en el video esta es tu cartita.
+      Mientras escribo esto estoy mirando nuestra fotito y siento un
+      sentimiento increíble en el pecho.
+      <br><br>
+      Parece que la vida tiene a sus favoritos y definitivamente soy uno de ellos.
+      No importa dónde estemos, siempre siento tu presencia a mi lado.
+      <br><br>
+      Nuestro amor es inquebrantable, como teléfono Nokia.
+      Nuestro vínculo es único, como tu preciosa manera de caminar.
+      <br><br>
+      Gracias por estar siempre conmigo, por reír conmigo,
+      por aguantar mis tontadas y por el brillo de tus ojos.
+      <br><br>
+      Eres el amor de mi vida y quiero hacerte feliz siempre.
+      <br><br>
+      <i>Con cariño, tu cachorrito 🐶💖</i>
+    </div>
+  </div>
+
+  <script>
+    const puzzle = document.getElementById('puzzle');
+    const overlay = document.getElementById('winOverlay');
+    const letter = document.getElementById('finalLetter');
+    const music = document.getElementById('bgMusic');
+
+    const images = ['FOTO1.jpeg','FOTO2.jpg','FOTO3.jpeg'];
+
+    let currentImage = 0;
+    let completed = [false, false, false];
+
+    const size = 4;
+    const positions = [...Array(size * size).keys()];
+    let shuffled = [...positions];
+
+    let draggedIndex = null;
+
+    function shufflePieces() {
+      shuffled = [...positions].sort(() => Math.random() - 0.5);
+    }
+
+    function createPuzzle() {
+      puzzle.innerHTML = '';
+
+      shuffled.forEach((pos, index) => {
+        const piece = document.createElement('div');
+        piece.classList.add('piece');
+        piece.draggable = true;
+
+        piece.style.backgroundImage = `url('${images[currentImage]}')`;
+
+        const percent = 100 / (size - 1);
+        const x = (pos % size) * percent;
+        const y = Math.floor(pos / size) * percent;
+
+        piece.style.backgroundPosition = `${x}% ${y}%`;
+
+        piece.addEventListener('dragstart', () => draggedIndex = index);
+        piece.addEventListener('dragover', e => e.preventDefault());
+
+        piece.addEventListener('drop', () => {
+          if (draggedIndex !== null) {
+            [shuffled[draggedIndex], shuffled[index]] = [shuffled[index], shuffled[draggedIndex]];
+            createPuzzle();
+          }
+        });
+
+        puzzle.appendChild(piece);
+      });
+
+      checkWin();
+    }
+
+    function checkWin() {
+      if (shuffled.every((val, i) => val === positions[i])) {
+        completed[currentImage] = true;
+
+        if (completed.every(v => v)) {
+          showFinal();
+        }
+      }
+    }
+
+    function showFinal() {
+      overlay.style.display = 'flex';
+
+      // Mostrar carta después de 15 segundos
+      setTimeout(() => {
+        letter.style.display = 'block';
+        music.play();
+      }, 15000);
+    }
+
+    function changeImage(index) {
+      currentImage = index;
+      shufflePieces();
+      createPuzzle();
+    }
+
+    shufflePieces();
+    createPuzzle();
+  </script>
+</body>
+</html>
